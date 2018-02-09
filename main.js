@@ -7,7 +7,7 @@ if (hasUserMedia()) {
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
     navigator.mediaDevices.enumerateDevices().then(function(sources){
         console.log(sources)
-        // defiine soutce
+        // define sources
         var audioSource = null;
         var videoSource = null;
         for (var i = 0; i < sources.length; ++i) {
@@ -30,10 +30,30 @@ if (hasUserMedia()) {
                 optional: [{sourceId: videoSource}]
             }
         };
+        var video = document.querySelector('video'),
+            canvas = document.querySelector('canvas'),
+            streaming = false;
         navigator.getUserMedia(constraints, function (stream) {
-            var video = document.querySelector('video');
             video.src = window.URL.createObjectURL(stream);
+            streaming = true;
         }, function (err) {});
+        // add filters
+        var filters = ['', 'grayscale', 'sepia', 'invert'],
+            currentFilter = 0;
+        // capture video frame on button click
+        document.querySelector('#capture').addEventListener('click',
+            function (event) {
+                if (streaming) {
+                    canvas.width = video.clientWidth;
+                    canvas.height = video.clientHeight;
+                    var context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0);
+                    // change filter after every capture
+                    currentFilter++;
+                    if (currentFilter > filters.length - 1) currentFilter = 0;
+                    canvas.className = filters[currentFilter];
+                }
+        });
     });
     
 } else {
